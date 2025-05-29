@@ -1,0 +1,38 @@
+{
+  "type": "record",
+  "name": "ReceiptData",
+  "namespace": "com.example.test1.entity",
+  "fields": [
+    { "name": "franchise_id", "type": "int" },
+    { "name": "store_brand", "type": ["null", "string"], "default": null },
+    { "name": "store_id", "type": "int" },
+    { "name": "store_name", "type": ["null", "string"], "default": null },
+    { "name": "region", "type": ["null", "string"], "default": null },
+    { "name": "store_address", "type": ["null", "string"], "default": null },
+
+    {
+      "name": "menu_items",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "MenuItem",
+
+          "fields": [
+            { "name": "menu_id", "type": "int" },
+            { "name": "menu_name", "type": ["null", "string"], "default": null },
+            { "name": "unit_price", "type": "int" },
+            { "name": "quantity", "type": "int" }
+          ]
+        }
+      }
+    },
+
+    { "name": "total_price", "type": "int" },
+    { "name": "user_id", "type": "int" },
+    { "name": "time", "type": ["null", "string"], "default": null },
+    { "name": "user_name", "type": ["null", "string"], "default": null },
+    { "name": "user_gender", "type": ["null", "string"], "default": null },
+    { "name": "user_age", "type": "int" }
+  ]
+}

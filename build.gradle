@@ -1,0 +1,118 @@
+plugins {
+    id 'java'
+    id 'application'
+    id "com.github.davidmc24.gradle.plugin.avro" version "1.9.1"
+}
+
+group = 'org.example.payment_guard'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://packages.confluent.io/maven/"
+    }
+}
+
+dependencies {
+    // Flink Core
+    implementation 'org.apache.flink:flink-streaming-java:1.18.0'
+    implementation 'org.apache.flink:flink-clients:1.18.0'
+    
+    // Flink Kafka Connector
+    implementation 'org.apache.flink:flink-connector-kafka:3.0.1-1.18'
+    implementation 'org.apache.flink:flink-connector-base:1.18.0'
+    
+    // Kafka Clients (직접 사용)
+    implementation 'org.apache.kafka:kafka-clients:3.4.0'
+    
+    // JSON Processing
+    implementation 'org.apache.flink:flink-json:1.18.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    
+    // Logging
+    implementation 'org.slf4j:slf4j-api:2.0.7'
+    implementation 'org.slf4j:slf4j-simple:2.0.7'
+    
+    // Testing
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    // Avro
+    implementation 'org.apache.avro:avro:1.11.1'
+    implementation 'org.apache.flink:flink-avro:1.18.0'
+    implementation 'org.apache.flink:flink-avro-confluent-registry:1.18.0'
+}
+
+avro {
+    stringType = "String"
+    fieldVisibility = "PRIVATE"
+    createSetters = true
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs += 'build/generated-main-avro-java'
+        }
+    }
+}
+
+application {
+    mainClass = project.hasProperty('mainClass') ? project.getProperty('mainClass') : 'org.example.payment_guard.Main'
+    applicationDefaultJvmArgs = [
+        '--add-opens=java.base/java.util=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED',
+        '--add-opens=java.base/java.text=ALL-UNNAMED',
+        '--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED',
+        '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED',
+        '--add-opens=java.base/java.nio=ALL-UNNAMED',
+        '--add-opens=java.base/java.util.stream=ALL-UNNAMED',
+        '--add-opens=java.base/java.util.function=ALL-UNNAMED',
+        '--add-opens=java.base/java.time=ALL-UNNAMED',
+        '-Djdk.reflect.useDirectMethodHandle=false',
+        '-Xmx2048m',  // 힙 메모리 최대 크기 설정
+        '-Xms512m'    // 힙 메모리 초기 크기 설정
+    ]
+}
+
+tasks.withType(JavaExec) {
+    jvmArgs = [
+        '--add-opens=java.base/java.util=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED',
+        '--add-opens=java.base/java.text=ALL-UNNAMED',
+        '--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED',
+        '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED',
+        '--add-opens=java.base/java.nio=ALL-UNNAMED',
+        '--add-opens=java.base/java.util.stream=ALL-UNNAMED',
+        '--add-opens=java.base/java.util.function=ALL-UNNAMED',
+        '--add-opens=java.base/java.time=ALL-UNNAMED',
+        '-Djdk.reflect.useDirectMethodHandle=false',
+        '-Xmx2048m',
+        '-Xms512m'
+    ]
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.example.payment_guard.Main'
+    }
+    
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+task printClasspath {
+    doLast {
+        println configurations.runtimeClasspath.collect { it }.join(':')
+    }
+}
